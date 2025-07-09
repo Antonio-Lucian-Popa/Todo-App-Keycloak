@@ -47,6 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (code) {
         // Exchange code for tokens
         const tokens = await keycloakService.exchangeCodeForToken(code);
+        console.log('Tokens received:', tokens);
         const user = await keycloakService.getUserInfo(tokens.access_token);
         
         setState({
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Check if already authenticated
       if (keycloakService.isAuthenticated()) {
         const accessToken = keycloakService.getAccessToken();
+        console.log('Access token found:', accessToken);
         if (accessToken) {
           const user = await keycloakService.getUserInfo(accessToken);
           setState({
