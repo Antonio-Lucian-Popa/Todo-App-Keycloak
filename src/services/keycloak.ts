@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
 import { AuthTokens, User, KeycloakConfig, LoginCredentials, RegisterData } from '@/types/auth';
 import { keycloakConfig } from '@/config/keycloak';
@@ -125,7 +126,7 @@ class KeycloakService {
       }
     );
 
-    return response.data.access_token;
+    return (response.data as { access_token: string }).access_token;
   }
 
   /**
@@ -284,12 +285,20 @@ class KeycloakService {
    * Get authenticated axios instance with automatic token refresh
    */
   getAuthenticatedAxios(): AxiosInstance {
-    const instance = axios.create();
+    const instance = axios.create({
+      baseURL: `${this.config.url}/realms/${this.config.realm}/protocol/openid-connect`,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
 
     // Request interceptor to add token
     instance.interceptors.request.use((config) => {
       const token = this.getAccessToken();
       if (token) {
+        if (!config.headers) {
+          config.headers = {};
+        }
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
